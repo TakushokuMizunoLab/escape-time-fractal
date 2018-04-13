@@ -10,33 +10,97 @@ on(window, "load", _ => {
 
     let canvasSize = 400;
     let iterator = 3000;
+    let isMouseDown = false;
+    let calcOpt = {
+        sx: 0,
+        sy: 0,
+        w: 2
+    },
+    clickPos = {
+        x: 0,
+        y: 0
+    };
+    let calcOptHistory = [];
+    let mandelbrotImageData;
 
     canvas.width = canvas.height = canvasSize;
 
     on(canvas, "mousedown", e => {
-
+        if (!isMouseDown) {
+            isMouseDown = true;
+            clickPos = getPos(e);
+        }
     });
 
     on(canvas, "mousemove", e => {
-
+        if (isMouseDown) {
+            drawResizeControl(clickPos, getPos(e));
+        }
     });
 
     on(canvas, "mouseup", e => {
-
+        if (isMouseDown) {
+            isMouseDown = false;
+            let nowPos = getPos(e);
+            let nsx = calcOpt.sx - calcOpt.w + clickPos.x / canvasSize * calcOpt.w * 2,
+                nsy = calcOpt.sy - calcOpt.w + clickPos.y / canvasSize * calcOpt.w * 2,
+                nw = Math.abs(calcOpt.w * ((clickPos.x - Math.max(nowPos.x, nowPos.y)) / canvasSize * 2));
+            updateCalcOptHistory(calcOpt);
+            calcOpt.sx = nsx;
+            calcOpt.sy = nsy;
+            calcOpt.w = nw;
+            calcMandelbrot(calcOpt);
+        }
     });
 
-    function calcMandelbrot (sx, sy, w) {
+    function getPos (e) {
+        let rect = e.target.getBoundingClientRect();
+        let res_obj = {
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
+        };
+        //console.log(res_obj);
+        return res_obj;
+    }
 
+    function drawResizeControl (fromPos, toPos) {
+        let dx = Math.abs(toPos.x - fromPos.x),
+            dy = Math.abs(toPos.y - fromPos.y);
+        let dis = Math.max(dx, dy);
+        ctx.clearRect(0, 0, canvasSize, canvasSize);
+        ctx.putImageData(mandelbrotImageData, 0, 0);
+        ctx.save();
+        ctx.globalAlpha = .5;
+        ctx.fillStyle = "red";
+        ctx.fillRect(fromPos.x - dis, fromPos.y - dis, dis * 2, dis * 2);
+        ctx.restore();
+    }
+
+    function updateCalcOptHistory (arg = false) {
+        if (arg) {
+            calcOptHistory.push({...arg});
+        }
+        if (calcOptHistory.length > 0) {
+            getel("#redo").removeAttribute("disabled");
+        } else {
+            getel("#redo").setAttribute("disabled", true);
+        }
+    }
+
+    function calcMandelbrot (arg) {
+
+        let {sx, sy, w} = arg;
         let res_map = new Array(canvasSize)
                           .fill(0)
-                          .map(_ => new Array(canvasSize).fill(0));
+                          .map(_ => new Array(canvasSize).fill(-1));
+        let xx, yy, zx, zy, cx, cy, tx, ty;
         for (let y = 0; y < canvasSize; y++) {
             for (let x = 0; x < canvasSize; x++) {
-                let xx = sx - w / 2 + x / canvasSize * w,
-                    yy = sy - w / 2 + y / canvasSize  * w;
-                let zx = 0, zy = 0;
-                let cx = xx, cy = yy;
-                let tx = 0, ty = 0, i = 0;
+                xx = sx - w + x / canvasSize * w * 2;
+                yy = sy - w + y / canvasSize  * w * 2;
+                zx = zy = 0;
+                cx = xx, cy = yy;
+                tx = ty = i = 0;
                 for (i = 0; i < iterator; i++) {
                     tx = zx * zx - zy * zy;
                     ty = 2 * zx * zy;
@@ -48,18 +112,19 @@ on(window, "load", _ => {
                 }
             }
         }
-        draw(res_map);
+        drawSet(res_map);
 
     }
 
-    function draw (src_map) {
+    function drawSet (src_map) {
 
+        ctx.clearRect(0, 0, canvasSize, canvasSize);
         let imgData = ctx.getImageData(0, 0, canvasSize, canvasSize);
         let data = imgData.data;
         let dataPtr = 0;
         src_map.forEach(arr => 
             arr.forEach(val => {
-                if (val === 0) {
+                if (val === -1) {
                     data[dataPtr] = data[dataPtr + 1] = data[dataPtr + 2] = 0;
                     data[dataPtr + 3] = 255;
                 } else {
@@ -70,9 +135,16 @@ on(window, "load", _ => {
             })
         );
         ctx.putImageData(imgData, 0, 0);
+        mandelbrotImageData = imgData;
 
     }
 
-    calcMandelbrot(.25, 0, .1);
+    on(getel("#redo"), "click", e => {
+        calcOpt = calcOptHistory.pop();
+        updateCalcOptHistory();
+        calcMandelbrot(calcOpt);
+    });
+
+    calcMandelbrot(calcOpt);
 
 });

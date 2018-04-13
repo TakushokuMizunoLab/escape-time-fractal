@@ -3,13 +3,13 @@ body {
 }
 
 .canvas-wrap {
-    overflow:auto;
-    resize:both;
+    /*overflow:auto;
+    resize:both;*/
 }
 
 #canvas {
     background-color: white;
     border: solid 1px black;
-    width: 95%;
-    height: 95%;
+    /*width: 95%;
+    height: 95%;*/
 }
