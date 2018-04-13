@@ -26,19 +26,24 @@ on(window, "load", _ => {
     canvas.width = canvas.height = canvasSize;
 
     on(canvas, "mousedown", e => {
+
         if (!isMouseDown) {
             isMouseDown = true;
             clickPos = getPos(e);
         }
+
     });
 
     on(canvas, "mousemove", e => {
+
         if (isMouseDown) {
             drawResizeControl(clickPos, getPos(e));
         }
+
     });
 
     on(canvas, "mouseup", e => {
+
         if (isMouseDown) {
             isMouseDown = false;
             let nowPos = getPos(e);
@@ -51,9 +56,12 @@ on(window, "load", _ => {
             calcOpt.w = nw;
             calcMandelbrot(calcOpt);
         }
+
     });
 
+    //キャンバスのクリックイベントから座標値を算出する
     function getPos (e) {
+
         let rect = e.target.getBoundingClientRect();
         let res_obj = {
             x: e.clientX - rect.left,
@@ -61,9 +69,12 @@ on(window, "load", _ => {
         };
         //console.log(res_obj);
         return res_obj;
+
     }
 
+    //描画領域を変更する際のコントロールを描画する
     function drawResizeControl (fromPos, toPos) {
+
         let dx = Math.abs(toPos.x - fromPos.x),
             dy = Math.abs(toPos.y - fromPos.y);
         let dis = Math.max(dx, dy);
@@ -74,9 +85,13 @@ on(window, "load", _ => {
         ctx.fillStyle = "red";
         ctx.fillRect(fromPos.x - dis, fromPos.y - dis, dis * 2, dis * 2);
         ctx.restore();
+
     }
 
+    //履歴のハッシュを更新する
+    //追加、リドゥはここで受け持つ
     function updateCalcOptHistory (arg = false) {
+
         if (arg) {
             calcOptHistory.push({...arg});
         }
@@ -85,8 +100,10 @@ on(window, "load", _ => {
         } else {
             getel("#redo").setAttribute("disabled", true);
         }
+
     }
 
+    //マンデルブロ集合を計算する
     function calcMandelbrot (arg) {
 
         let {sx, sy, w} = arg;
@@ -116,6 +133,7 @@ on(window, "load", _ => {
 
     }
 
+    //マンデルブロ集合を描画する
     function drawSet (src_map) {
 
         ctx.clearRect(0, 0, canvasSize, canvasSize);
@@ -128,7 +146,9 @@ on(window, "load", _ => {
                     data[dataPtr] = data[dataPtr + 1] = data[dataPtr + 2] = 0;
                     data[dataPtr + 3] = 255;
                 } else {
-                    data[dataPtr] = data[dataPtr + 1] = data[dataPtr + 2] = 255;
+                    data[dataPtr] = val % 3 == 0 ? 255 : 0;
+                    data[dataPtr + 1] = val % 3 == 1 ? 255 : 0;
+                    data[dataPtr + 2] = val % 3 == 2 ? 255 : 0;
                     data[dataPtr + 3] = 255;
                 }
                 dataPtr += 4;
@@ -139,10 +159,14 @@ on(window, "load", _ => {
 
     }
 
+    //redoボタンのコールバック
+    //パラメータをひとつ前の状態に戻した上で再描画
     on(getel("#redo"), "click", e => {
+
         calcOpt = calcOptHistory.pop();
         updateCalcOptHistory();
         calcMandelbrot(calcOpt);
+
     });
 
     calcMandelbrot(calcOpt);
