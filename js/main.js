@@ -19,6 +19,10 @@ on(window, "load", _ => {
     clickPos = {
         x: 0,
         y: 0
+    },
+    param = {
+        n: .7885 * Math.cos(0),
+        i: .7885 * Math.sin(0)
     };
     let calcOptHistory = [];
     let mandelbrotImageData;
@@ -107,6 +111,10 @@ on(window, "load", _ => {
     function calcMandelbrot (arg) {
 
         let {sx, sy, w} = arg;
+        let coe = +getel("#coe-num").value,
+            dec = +getel("#dec-num").value;
+        param.n = coe * Math.cos(dec);
+        param.i = coe * Math.sin(dec);
         let res_map = new Array(canvasSize)
                           .fill(0)
                           .map(_ => new Array(canvasSize).fill(-1));
@@ -114,15 +122,15 @@ on(window, "load", _ => {
         for (let y = 0; y < canvasSize; y++) {
             for (let x = 0; x < canvasSize; x++) {
                 xx = sx - w + x / canvasSize * w * 2;
-                yy = sy - w + y / canvasSize  * w * 2;
-                zx = zy = 0;
-                cx = xx, cy = yy;
+                yy = sy - w + y / canvasSize * w * 2;
+                zx = xx, zy = yy;
+                cx = param.n, cy = param.i;
                 tx = ty = i = 0;
                 for (i = 0; i < iterator; i++) {
                     tx = zx * zx - zy * zy;
                     ty = 2 * zx * zy;
                     zx = tx + cx, zy = ty + cy;
-                    if (Math.sqrt(zx * zx + zy * zy) > 2) {
+                    if ((zx * zx + zy * zy) > 4) {
                         res_map[y][x] = i;
                         break;
                     }
@@ -165,6 +173,19 @@ on(window, "load", _ => {
 
         calcOpt = calcOptHistory.pop();
         updateCalcOptHistory();
+        calcMandelbrot(calcOpt);
+
+    });
+
+    //再描画ボタンのコールバック
+    //パラメータの変更などに際して手動で再描画を行う
+    on(getel("#repaint"), "click", e => {
+
+        calcOpt = {
+            sx: 0,
+            sy: 0,
+            w: 2
+        };
         calcMandelbrot(calcOpt);
 
     });

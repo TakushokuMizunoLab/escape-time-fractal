@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>mandelbrot-set</title>
+    <title>julia-set</title>
     <link rel="stylesheet" href="./master.css">
     <script src="./js/DOMUtl.min.js"></script>
     <script src="./js/main.js"></script>
@@ -13,6 +13,9 @@
     </div>
     <div class="controls">
         <input type="button" value="redo" id="redo" disabled>
+        <input type="button" value="再描画" id="repaint"><br>
+        係数：<input type="number" value="0.7885" id="coe-num" step="0.0001"><br>
+        偏角：<input type="number" value="0" id="dec-num" step="0.0001">
     </div>
 </body>
 </html>
