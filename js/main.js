@@ -110,15 +110,13 @@ on(window, "load", _ => {
         let res_map = new Array(canvasSize)
                           .fill(0)
                           .map(_ => new Array(canvasSize).fill(-1));
-        let xx, yy, zx, zy, cx, cy, tx, ty;
         for (let y = 0; y < canvasSize; y++) {
             for (let x = 0; x < canvasSize; x++) {
-                xx = sx - w + x / canvasSize * w * 2;
-                yy = sy - w + y / canvasSize  * w * 2;
-                zx = zy = 0;
-                cx = xx, cy = yy;
-                tx = ty = i = 0;
-                for (i = 0; i < iterator; i++) {
+                let cx = sx - w + x / canvasSize * w * 2,
+                    cy = sy - w + y / canvasSize  * w * 2,
+                    zx = 0, zy = 0,
+                    tx = 0, ty = 0;
+                for (let i = 0; i < iterator; i++) {
                     tx = zx * zx - zy * zy;
                     ty = 2 * zx * zy;
                     zx = tx + cx, zy = ty + cy;
