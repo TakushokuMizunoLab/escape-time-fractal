@@ -24,9 +24,21 @@ on(window, "load", _ => {
         n: .7885 * Math.cos(0),
         i: .7885 * Math.sin(0)
     };
+    let colors = (_ => {
+        let hsv = {
+            h: 0,
+            s: 255,
+            v: 255
+        };
+        return new Array(100).fill(0).map((val, idx) => {
+            hsv.h = ((idx / 100 * 256) + 100) % 256;
+            return hsvToRgb(hsv);
+        });
+    })();
     let calcOptHistory = [];
     let mandelbrotImageData;
     let calcMode = 0;   //0: mandelbrot, 1: julia
+    let timer;
 
     canvas.width = canvas.height = canvasSize;
 
@@ -158,16 +170,17 @@ on(window, "load", _ => {
         ctx.clearRect(0, 0, canvasSize, canvasSize);
         let imgData = ctx.getImageData(0, 0, canvasSize, canvasSize);
         let data = imgData.data;
-        let dataPtr = 0;
+        let dataPtr = 0, color;
         src_map.forEach(arr => 
             arr.forEach(val => {
                 if (val === -1) {
                     data[dataPtr] = data[dataPtr + 1] = data[dataPtr + 2] = 0;
                     data[dataPtr + 3] = 255;
                 } else {
-                    data[dataPtr] = val % 3 == 0 ? 255 : 0;
-                    data[dataPtr + 1] = val % 3 == 1 ? 255 : 0;
-                    data[dataPtr + 2] = val % 3 == 2 ? 255 : 0;
+                    color = colors[val % 100];
+                    data[dataPtr] = color.r;
+                    data[dataPtr + 1] = color.g;
+                    data[dataPtr + 2] = color.b;
                     data[dataPtr + 3] = 255;
                 }
                 dataPtr += 4;
@@ -216,6 +229,20 @@ on(window, "load", _ => {
     //画像をimg要素に吐き出す
     on(getel("#image-output"), "click", e => {
         getel("#result-image").src = canvas.toDataURL();
+    });
+
+    //自動拡大
+    on(getel("#auto-zoom"), "click", e => {
+        if (e.target.value == "自動拡大") {
+            e.target.value = "自動拡大停止";
+            timer = setInterval(_ => {
+                calcOpt.w *= 0.99;
+                calcFractal(calcOpt);
+            }, 100);
+        } else {
+            e.target.value = "自動拡大";
+            clearInterval(timer);
+        }
     });
 
     calcFractal(calcOpt);

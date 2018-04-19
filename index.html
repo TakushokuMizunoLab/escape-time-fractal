@@ -5,6 +5,7 @@
     <title>mandelbrot/julia set</title>
     <link rel="stylesheet" href="./master.css">
     <script src="./js/DOMUtl.min.js"></script>
+    <script src="./js/colorParser.js"></script>
     <script src="./js/main.js"></script>
 </head>
 <body>
@@ -22,6 +23,7 @@
             係数：<input type="number" value="0.7885" id="coe-num" step="0.0001" disabled><br>
             偏角：<input type="number" value="0" id="dec-num" step="0.0001" disabled>
         </div>
+        <input type="button" value="自動拡大" id="auto-zoom"><br>
         <input type="button" value="画像として出力する↓" id="image-output">
     </div>
     <div>
