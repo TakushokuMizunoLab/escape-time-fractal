@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>julia-set</title>
+    <title>mandelbrot/julia set</title>
     <link rel="stylesheet" href="./master.css">
     <script src="./js/DOMUtl.min.js"></script>
     <script src="./js/main.js"></script>
@@ -12,10 +12,20 @@
         <canvas id="canvas"></canvas>
     </div>
     <div class="controls">
-        <input type="button" value="redo" id="redo" disabled>
+        <input type="button" value="undo" id="undo" disabled>
         <input type="button" value="再描画" id="repaint"><br>
-        係数：<input type="number" value="0.7885" id="coe-num" step="0.0001"><br>
-        偏角：<input type="number" value="0" id="dec-num" step="0.0001">
+        <div id="calc-mode">
+            <label>マンデルブロ集合<input type="radio" name="mode" value="mandelbrot" checked></label><br>
+            <label>ジュリア集合<input type="radio" value="julia" name="mode"></label>
+        </div>
+        <div id="julia-param">
+            係数：<input type="number" value="0.7885" id="coe-num" step="0.0001" disabled><br>
+            偏角：<input type="number" value="0" id="dec-num" step="0.0001" disabled>
+        </div>
+        <input type="button" value="画像として出力する↓" id="image-output">
+    </div>
+    <div>
+        <img id="result-image">
     </div>
 </body>
 </html>

@@ -1,4 +1,4 @@
-const {getel, on} = DOMUtl();
+const {getel, getels, on} = DOMUtl();
 
 //ページ読み込み時に発火するコールバック
 on(window, "load", _ => {
@@ -26,6 +26,7 @@ on(window, "load", _ => {
     };
     let calcOptHistory = [];
     let mandelbrotImageData;
+    let calcMode = 0;   //0: mandelbrot, 1: julia
 
     canvas.width = canvas.height = canvasSize;
 
@@ -58,7 +59,7 @@ on(window, "load", _ => {
             calcOpt.sx = nsx;
             calcOpt.sy = nsy;
             calcOpt.w = nw;
-            calcMandelbrot(calcOpt);
+            calcFractal(calcOpt);
         }
 
     });
@@ -100,17 +101,22 @@ on(window, "load", _ => {
             calcOptHistory.push({...arg});
         }
         if (calcOptHistory.length > 0) {
-            getel("#redo").removeAttribute("disabled");
+            getel("#undo").removeAttribute("disabled");
         } else {
-            getel("#redo").setAttribute("disabled", true);
+            getel("#undo").setAttribute("disabled", true);
         }
 
     }
 
-    //マンデルブロ集合を計算する
-    function calcMandelbrot (arg) {
+    //フラクタル画像を計算する
+    function calcFractal (arg) {
 
         let {sx, sy, w} = arg;
+        console.log("\n----------");
+        console.log(`center position: x=${sx}, y=${sy}`);
+        console.log(`width, height: ±${w}`);
+        console.log(`zoom: *${2 / w}`);
+        console.log("----------\n");
         let coe = +getel("#coe-num").value,
             dec = +getel("#dec-num").value;
         param.n = coe * Math.cos(dec);
@@ -122,8 +128,14 @@ on(window, "load", _ => {
             for (let x = 0; x < canvasSize; x++) {
                 let xx = sx - w + x / canvasSize * w * 2;
                 let yy = sy - w + y / canvasSize * w * 2;
-                let zx = xx, zy = yy;
-                let cx = param.n, cy = param.i;
+                let zx, zy, cx, cy;
+                if (calcMode == 0) {
+                    zx = 0, zy = 0;
+                    cx = xx, cy = yy;
+                } else {
+                    zx = xx, zy = yy;
+                    cx = param.n, cy = param.i;
+                }
                 let tx ,ty;
                 for (i = 0; i < iterator; i++) {
                     tx = zx * zx - zy * zy;
@@ -140,7 +152,7 @@ on(window, "load", _ => {
 
     }
 
-    //マンデルブロ集合を描画する
+    //計算結果のマップを元に画像を描画する
     function drawSet (src_map) {
 
         ctx.clearRect(0, 0, canvasSize, canvasSize);
@@ -166,13 +178,13 @@ on(window, "load", _ => {
 
     }
 
-    //redoボタンのコールバック
+    //undoボタンのコールバック
     //パラメータをひとつ前の状態に戻した上で再描画
-    on(getel("#redo"), "click", e => {
+    on(getel("#undo"), "click", e => {
 
         calcOpt = calcOptHistory.pop();
         updateCalcOptHistory();
-        calcMandelbrot(calcOpt);
+        calcFractal(calcOpt);
 
     });
 
@@ -185,10 +197,29 @@ on(window, "load", _ => {
             sy: 0,
             w: 2
         };
-        calcMandelbrot(calcOpt);
+        calcFractal(calcOpt);
 
     });
 
-    calcMandelbrot(calcOpt);
+    [...getels("#calc-mode input")].forEach(elm => {
+        on(elm, "change", e => {
+            if (elm.value == "mandelbrot") calcMode = 0;
+            else calcMode = 1;
+            if (calcMode == 1) {
+                [...getels("#julia-param input")].forEach(elm => elm.removeAttribute("disabled"));
+            } else {
+                [...getels("#julia-param input")].forEach(elm => elm.setAttribute("disabled", true));
+            }
+        });
+    });
+
+    //画像をimg要素に吐き出す
+    on(getel("#image-output"), "click", e => {
+        getel("#result-image").src = canvas.toDataURL();
+    });
+
+    calcFractal(calcOpt);
+    getel("#undo").setAttribute("disabled", true);
+    getel("#calc-mode input[value='mandelbrot']").click();
 
 });
